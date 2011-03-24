@@ -38,7 +38,7 @@ support.
 
 0. `for i in ~/.vim ~/.vimrc ~/.gvimrc; do [ -e $i ] && mv $i $i.old;
    done`
-1. `git clone git://github.com/carlhuda/janus.git ~/.vim`
+1. `git clone http://github.com/carlhuda/janus.git ~/.vim`
 2. `cd ~/.vim`
 3. `rake`
 
@@ -59,8 +59,8 @@ For example, to override the default color schemes:
 If you want to add additional Vim plugins you can do so by adding a
 `~/.janus.rake` like so:
 
-    vim_plugin_task "zencoding", "git://github.com/mattn/zencoding-vim.git"
-    vim_plugin_task "minibufexpl", "git://github.com/fholgado/minibufexpl.vim.git"
+    vim_plugin_task "zencoding", "http://github.com/mattn/zencoding-vim.git"
+    vim_plugin_task "minibufexpl", "http://github.com/fholgado/minibufexpl.vim.git"
 
 ## Updating to the latest version
 
