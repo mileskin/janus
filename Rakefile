@@ -1,5 +1,5 @@
 module VIM
-  Dirs = %w[ after autoload doc plugin ruby snippets syntax ftdetect ftplugin colors indent ]
+  Dirs = %w[ after autoload compiler doc plugin ruby snippets syntax ftdetect ftplugin colors indent backup ]
 end
 
 directory "tmp"
@@ -93,7 +93,7 @@ def vim_plugin_task(name, repo=nil)
           else
             subdirs.each do |subdir|
               if File.exists?(subdir)
-                sh "cp -rf #{subdir}/* #{cwd}/#{subdir}/"
+                sh "cp -RfL #{subdir}/* #{cwd}/#{subdir}/"
               end
             end
           end
@@ -120,6 +120,10 @@ def vim_plugin_task(name, repo=nil)
   task :default => name
 end
 
+def skip_vim_plugin(name)
+  Rake::Task[:default].prerequisites.delete(name)
+end
+
 vim_plugin_task "ack.vim",          "http://github.com/mileszs/ack.vim.git"
 vim_plugin_task "color-sampler",    "http://github.com/vim-scripts/Color-Sampler-Pack.git"
 vim_plugin_task "conque",           "http://conque.googlecode.com/files/conque_1.1.tar.gz"
@@ -128,13 +132,12 @@ vim_plugin_task "git",              "http://github.com/tpope/vim-git.git"
 vim_plugin_task "haml",             "http://github.com/tpope/vim-haml.git"
 vim_plugin_task "indent_object",    "http://github.com/michaeljsmith/vim-indent-object.git"
 vim_plugin_task "javascript",       "http://github.com/pangloss/vim-javascript.git"
-vim_plugin_task "jslint",           "http://github.com/hallettj/jslint.vim.git"
-vim_plugin_task "markdown_preview", "http://github.com/robgleeson/vim-markdown-preview.git"
 vim_plugin_task "nerdtree",         "http://github.com/wycats/nerdtree.git"
 vim_plugin_task "nerdcommenter",    "http://github.com/ddollar/nerdcommenter.git"
 vim_plugin_task "surround",         "http://github.com/tpope/vim-surround.git"
 vim_plugin_task "taglist",          "http://github.com/vim-scripts/taglist.vim.git"
 vim_plugin_task "vividchalk",       "http://github.com/tpope/vim-vividchalk.git"
+vim_plugin_task "solarized",        "http://github.com/altercation/vim-colors-solarized.git"
 vim_plugin_task "supertab",         "http://github.com/ervandew/supertab.git"
 vim_plugin_task "cucumber",         "http://github.com/tpope/vim-cucumber.git"
 vim_plugin_task "textile",          "http://github.com/timcharper/textile.vim.git"
@@ -153,9 +156,13 @@ vim_plugin_task "syntastic",        "http://github.com/scrooloose/syntastic.git"
 vim_plugin_task "puppet",           "http://github.com/ajf/puppet-vim.git"
 vim_plugin_task "scala",            "http://github.com/bdd/vim-scala.git"
 vim_plugin_task "gist-vim",         "http://github.com/mattn/gist-vim.git"
+vim_plugin_task "gundo",            "http://github.com/sjl/gundo.vim.git"
 
-vim_plugin_task "command_t",        "http://github.com/wincent/Command-T.git" do
-  sh "find ruby -name '.gitignore' | xargs rm"
+#vim_plugin_task "hammer",           "http://github.com/robgleeson/hammer.vim.git" do
+#  sh "gem install github-markup redcarpet"
+#end
+
+vim_plugin_task "command_t",        "http://s3.wincent.com/command-t/releases/command-t-1.2.1.vba" do
   Dir.chdir "ruby/command-t" do
     if File.exists?("/usr/bin/ruby1.8") # prefer 1.8 on *.deb systems
       sh "/usr/bin/ruby1.8 extconf.rb"
@@ -165,6 +172,27 @@ vim_plugin_task "command_t",        "http://github.com/wincent/Command-T.git" do
       sh "rvm system ruby extconf.rb"
     end
     sh "make clean && make"
+  end
+end
+
+vim_plugin_task "pep8" do
+  File.open(File.expand_path("../ftplugin/python_pep8.vim", __FILE__), "w") do |file|
+    file.puts <<-VIM.gsub(/^ +/, "")
+      " make Python follow PEP8 ( http://www.python.org/dev/peps/pep-0008/ )
+      setlocal softtabstop=4
+      setlocal tabstop=4
+      setlocal shiftwidth=4
+      setlocal textwidth=79
+    VIM
+  end
+end
+
+vim_plugin_task "make_tabs" do
+  File.open(File.expand_path("../ftplugin/make_tabs.vim", __FILE__), "w") do |file|
+    file.puts <<-VIM.gsub(/^ +/, "")
+      " make uses real tabs
+      setlocal noexpandtab
+    VIM
   end
 end
 
@@ -197,10 +225,10 @@ vim_plugin_task "janus_themes" do
 end
 
 vim_plugin_task "molokai" do
-  sh "curl https://github.com/mrtazz/molokai.vim/raw/master/colors/molokai.vim > colors/molokai.vim"
+  sh "curl https://raw.github.com/mrtazz/molokai.vim/master/colors/molokai.vim > colors/molokai.vim"
 end
 vim_plugin_task "mustache" do
-  sh "curl https://github.com/defunkt/mustache/raw/master/contrib/mustache.vim > syntax/mustache.vim"
+  sh "curl https://raw.github.com/defunkt/mustache/master/contrib/mustache.vim > syntax/mustache.vim"
   File.open(File.expand_path('../ftdetect/mustache.vim', __FILE__), 'w') do |file|
     file << "au BufNewFile,BufRead *.mustache        setf mustache"
   end
@@ -211,8 +239,15 @@ vim_plugin_task "arduino","http://github.com/vim-scripts/Arduino-syntax-file.git
   end
 end
 vim_plugin_task "vwilight" do
-  sh "curl https://gist.github.com/raw/796172/724c7ca237a7f6b8d857c4ac2991cfe5ffb18087/vwilight.vim > colors/vwilight.vim"
+  sh "curl https://raw.github.com/gist/796172/724c7ca237a7f6b8d857c4ac2991cfe5ffb18087 > colors/vwilight.vim"
 end
+vim_plugin_task "blackboard" do
+  sh "curl https://raw.github.com/nelstrom/vim-blackboard/master/colors/blackboard.vim > colors/blackboard.vim"
+end
+vim_plugin_task "github" do
+  sh "curl https://raw.github.com/joshuaclayton/dotfiles/master/vim/colors/github.vim > colors/github.vim"
+end
+
 
 if File.exists?(janus = File.expand_path("~/.janus.rake"))
   puts "Loading your custom rake file"

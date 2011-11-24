@@ -1,3 +1,7 @@
+" Include user's local pre .gvimrc config
+if filereadable(expand("~/.gvimrc.pre"))
+  source ~/.gvimrc.pre
+endif
 
 if has("gui_macvim")
   " Fullscreen takes up entire screen
@@ -19,6 +23,8 @@ if has("gui_macvim")
 
   " Command-/ to toggle comments
   map <D-/> <plug>NERDCommenterToggle<CR>
+  imap <D-/> <Esc><plug>NERDCommenterToggle<CR>i
+
 
   " Command-][ to increase/decrease indentation
   vmap <D-]> >gv
@@ -61,6 +67,9 @@ if has("gui_macvim")
   imap <Leader>= <Esc> <C-w>=
 endif
 
+" Don't beep
+set visualbell
+
 " Start without the toolbar
 set guioptions-=T
 
@@ -74,9 +83,11 @@ function StartTerm()
 endfunction
 
 " Project Tree
-autocmd VimEnter * call s:CdIfDirectory(expand("<amatch>"))
-autocmd FocusGained * call s:UpdateNERDTree()
-autocmd WinEnter * call s:CloseIfOnlyNerdTreeLeft()
+if exists("loaded_nerd_tree")
+  autocmd VimEnter * call s:CdIfDirectory(expand("<amatch>"))
+  autocmd FocusGained * call s:UpdateNERDTree()
+  autocmd WinEnter * call s:CloseIfOnlyNerdTreeLeft()
+endif
 
 " Close all open buffers on entering a window if the only
 " buffer that's left is the NERDTree buffer
@@ -214,11 +225,14 @@ RUBY
 endfunction
 
 " Define the NERDTree-aware aliases
-call s:DefineCommand("cd", "ChangeDirectory")
-call s:DefineCommand("touch", "Touch")
-call s:DefineCommand("rm", "Remove")
-call s:DefineCommand("e", "Edit")
-call s:DefineCommand("mkdir", "Mkdir")
+if exists("loaded_nerd_tree")
+  call s:DefineCommand("cd", "ChangeDirectory")
+  call s:DefineCommand("touch", "Touch")
+  call s:DefineCommand("rm", "Remove")
+  call s:DefineCommand("e", "Edit")
+  call s:DefineCommand("mkdir", "Mkdir")
+  cabbrev Edit! e!
+endif
 
 " Include user's local vim config
 if filereadable(expand("~/.gvimrc.local"))
